@@ -1,18 +1,22 @@
-// VendorProposalSection.js
 import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { UserType } from "../UserContext.js";
 import { useProposalContext } from "../proposalcontext.js";
 import ip from "../ipconfig";
 import jwt_decode from "jwt-decode";
+import moment from 'moment';
+import { useNavigation } from '@react-navigation/native'; // Import useNavigation
 
-const Vendorproposal = ({ navigation }) => {
+const Vendorproposal = () => {
   const [proposals, setProposals] = useState([]);
-  const { userId ,setUserId} = useContext(UserType); // Assuming you have only userId in UserContext
+  const { userId, setUserId } = useContext(UserType);
   const { setProposal } = useProposalContext();
-  const [vendorCategory, setVendorCategory] = useState(""); // State to store the vendor's category
+  const [vendorCategory, setVendorCategory] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
+  const navigation = useNavigation(); // Use useNavigation hook to get the navigation object
 
   useEffect(() => {
     // Fetch the vendor's category based on userId
@@ -21,11 +25,9 @@ const Vendorproposal = ({ navigation }) => {
       const decodedToken = jwt_decode(token);
       const userId = decodedToken.userId;
       setUserId(userId);
-      //console.log(userId);
       try {
         const response = await axios.get(`http://${ip}:8000/get-vendor-category/${userId}`);
         setVendorCategory(response.data.vendorcategory);
-       // console.log(vendorCategory);
       } catch (error) {
         console.log("Error fetching vendor category", error);
       }
@@ -34,18 +36,20 @@ const Vendorproposal = ({ navigation }) => {
     fetchVendorCategory();
   }, [userId]);
 
-  useEffect(() => {
-    // Fetch proposals matching the vendor's category
-    const fetchProposals = async () => {
-      try {
-        const response = await axios.get(`http://${ip}:8000/get-matching-proposals/${vendorCategory}`);
-        setProposals(response.data);
-        console.log(proposals);
-      } catch (error) {
-        console.log("Error fetching proposals", error);
-      }
-    };
+  const fetchProposals = async () => {
+    setRefreshing(true);
+    try {
+      const response = await axios.get(`http://${ip}:8000/get-matching-proposals/${vendorCategory}`);
+      const sortedProposals = response.data.sort((a, b) => moment(b.createdAt) - moment(a.createdAt));
+      setProposals(sortedProposals);
+    } catch (error) {
+      console.log("Error fetching proposals", error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
+  useEffect(() => {
     if (vendorCategory) {
       fetchProposals();
     }
@@ -53,12 +57,17 @@ const Vendorproposal = ({ navigation }) => {
 
   const handleItemPress = (item) => {
     setProposal(item);
-    navigation.navigate('proposaldetailscreen');
+    navigation.navigate('VendorHome') // Use the navigation object from the nearest parent navigator
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Proposals in Your Category</Text>
+      <View style={styles.headerContainer}>
+        <Text style={styles.header}>Proposals in Your Category</Text>
+        <TouchableOpacity onPress={fetchProposals} style={styles.refreshButton}>
+          <FontAwesome name="refresh" size={20} color="white" />
+        </TouchableOpacity>
+      </View>
       <FlatList
         data={proposals}
         keyExtractor={(item) => item._id}
@@ -67,9 +76,12 @@ const Vendorproposal = ({ navigation }) => {
             <View style={styles.proposalItem}>
               <Text style={styles.title}>Title: {item.title}</Text>
               <Text style={styles.description}>Description: {item.description}</Text>
+              <Text style={styles.timestamp}>Created: {moment(item.createdAt).format("MMM D, YYYY HH:mm A")}</Text>
             </View>
           </TouchableOpacity>
         )}
+        refreshing={refreshing}
+        onRefresh={fetchProposals}
       />
     </View>
   );
@@ -79,40 +91,47 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor:'white',
+    backgroundColor: 'white',
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+    backgroundColor: 'black',
+    padding: 8,
   },
   header: {
-    height:60,
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 12,
-    backgroundColor:'black',
-    color:'white',
-    paddingLeft:12,
-    paddingTop:12,
+    color: 'white',
+  },
+  refreshButton: {
+    backgroundColor: 'black',
+    padding: 8,
+    borderRadius: 5,
   },
   proposalItem: {
     marginBottom: 16,
     padding: 16,
     borderRadius: 8,
-    borderColor: 'black', // Black border color
-    borderWidth: 2, // Increase border width for emphasis
+    borderColor: 'black',
+    borderWidth: 2,
   },
   title: {
-    fontWeight: 'bold', // Bold title
-    fontSize: 18, // Adjust the font size as needed
-    color: 'black', // Black font color
-    marginBottom: 8, // Add some spacing between title and description
+    fontWeight: 'bold',
+    fontSize: 18,
+    color: 'black',
+    marginBottom: 8,
   },
   description: {
-    color: 'black', // Black font color for description
+    color: 'black',
   },
-  
+  timestamp: {
+    color: 'black',
+    fontSize: 13,
+    marginTop: 8,
+  },
 });
-
-
-
-
-
 
 export default Vendorproposal;

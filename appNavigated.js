@@ -19,6 +19,13 @@ import Chatscreen from './Screens/chatscreen';
 import RFPSection from './Screens/proposalscreen';
 import ProposalDetailsScreen from './Screens/proposaldetailscreen';
 import VendorHomeScreen from './Screens/VendorHome';
+import Vendorprofile from './Screens/Vendorprofile';
+import Vendororder from './Screens/Vendororder';
+import Vendorproposal from './Screens/Vendorproposal';
+import Vendorhome2 from './Screens/vendorhome2';
+import Vendorbid from './Screens/Vendorbids';
+import Product from './Screens/ProductManagement';
+
 
 const StackNavigator = createStackNavigator({
   Login: LoginScreen,
@@ -35,7 +42,14 @@ const StackNavigator = createStackNavigator({
   chatscreen: Chatscreen,
   proposalscreen: RFPSection,
   proposaldetailscreen:ProposalDetailsScreen,
-  VendorHome:VendorHomeScreen
+  VendorHome:VendorHomeScreen,
+  Vendorproposal:Vendorproposal,
+  //Vendorprofile:Vendorprofile,
+  Vendororder: Vendororder,
+  //vendorhome2: Vendorhome2,
+  Vendorbids: Vendorbid,
+  //ProductManagement:Product,
+
 },
 {
   defaultNavigationOptions: {
