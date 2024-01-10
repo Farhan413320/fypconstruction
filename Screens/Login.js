@@ -9,6 +9,7 @@ const LoginScreen = ({ navigation }) => {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
+
   // useEffect(() => {
   //   const checkLoginStatus = async () => {
   //     try {
@@ -29,18 +30,52 @@ const LoginScreen = ({ navigation }) => {
 
   const handleForgot = () => {
     navigation.navigate('Forgotpass');
+    setEmail('');
+    setPassword('');
+    setEmailError('');
+    setPasswordError('');
   };
 
   const handleCreate = () => {
-    navigation.navigate('RegisterasVendor');
+    Alert.alert(
+      "Register as",
+      "Choose your user type:",
+      [
+        {
+          text: "Customer",
+          onPress: () => {
+            navigation.navigate('RegisterCust');
+            setEmail('');
+            setPassword('');
+            setEmailError('');
+            setPasswordError('');
+          },
+        },
+        {
+          text: "Vendor",
+          onPress: () => {
+            navigation.navigate('RegisterasVendor');
+            setEmail('');
+            setPassword('');
+            setEmailError('');
+            setPasswordError('');
+          },
+        },
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   const handleLogin = () => {
-    // Reset any previous error messages
+    
     setEmailError('');
     setPasswordError('');
 
-    // Validate email and password
+    
     if (!email) {
       setEmailError('Please enter your email');
       return;
@@ -62,7 +97,7 @@ const LoginScreen = ({ navigation }) => {
       email: email,
       password: password,
     };
-console.log(ip);
+//console.log(ip);
     axios
       .post(`http://${ip}:8000/login`, user)
       .then((response) => {
@@ -70,6 +105,7 @@ console.log(ip);
         const token = response.data.token;
         AsyncStorage.setItem("authToken", token);
         const userType = response.data.userType;
+        
 
         if (userType === 'User') {
           navigation.replace('Home');
@@ -161,6 +197,7 @@ const styles = StyleSheet.create({
   input: {
     paddingHorizontal: 12,
     height: 60,
+    fontSize:16,
     borderColor: '#CCCCCC',
     borderBottomWidth: 1,
     borderRadius: 6,

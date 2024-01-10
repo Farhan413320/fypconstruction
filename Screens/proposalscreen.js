@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import axios from 'axios';
 import { UserType } from "../UserContext.js";
@@ -14,6 +15,8 @@ const RFPSection = ({ navigation }) => {
   const { userId, setUserId } = useContext(UserType);
   const { setProposal } = useProposalContext();
   const [refreshing, setRefreshing] = useState(false);
+
+  const isFocused = useIsFocused(); // Hook to determine if the screen is focused
 
   const fetchProposals = async () => {
     setRefreshing(true);
@@ -39,8 +42,10 @@ const RFPSection = ({ navigation }) => {
   };
 
   useEffect(() => {
-    fetchProposals();
-  }, []);
+    if (isFocused) {
+      fetchProposals();
+    }
+  }, [isFocused]);
 
   const handleItemPress = (item) => {
     setProposal(item);
@@ -60,10 +65,13 @@ const RFPSection = ({ navigation }) => {
     }
   };
 
+  const getStatusColor = (status) => {
+    return status === 'open' ? 'green' : 'red';
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
-       
         <Text style={styles.header}>Your Proposals</Text>
         <TouchableOpacity onPress={handleRefresh} style={styles.headerIcon}>
           <AntDesign name="reload1" size={24} color="white" />
@@ -81,11 +89,18 @@ const RFPSection = ({ navigation }) => {
         renderItem={({ item }) => (
           <TouchableOpacity onPress={() => handleItemPress(item)}>
             <View style={styles.proposalItem}>
-              <Text style={styles.title}>Title: {item.title}</Text>
-              <Text style={styles.description}>Description: {item.description}</Text>
-              <Text style={styles.timestamp}>
-                {formatDateTime(item.createdAt)}
-              </Text>
+              <View style={styles.leftContent}>
+                <Text style={styles.title}>Title: {item.title}</Text>
+                <Text style={styles.description}>Description: {item.description}</Text>
+              </View>
+              <View style={styles.rightContent}>
+                <Text style={{ ...styles.status, color: getStatusColor(item.status) }}>
+                  {item.status}
+                </Text>
+                <Text style={styles.timestamp}>
+                  {formatDateTime(item.createdAt)}
+                </Text>
+              </View>
             </View>
           </TouchableOpacity>
         )}
@@ -103,53 +118,77 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: 'white',
+    backgroundColor: '#F7F7F7',
   },
   headerContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
-    backgroundColor: 'black',
+    backgroundColor: '#333333',
+    padding: 16,
+    borderRadius: 8,
   },
   header: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: 'white',
+    color: '#FFFFFF',
   },
   headerIcon: {
-    padding: 8,
+    padding: 16,
   },
   proposalItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 16,
     padding: 16,
     borderRadius: 8,
-    borderColor: 'black',
-    borderWidth: 2,
+    backgroundColor: '#FFFFFF',
+    elevation: 2, // Add elevation for a subtle shadow on Android
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+  },
+  leftContent: {
+    flex: 1,
+  },
+  rightContent: {
+    alignItems: 'flex-end',
   },
   title: {
     fontWeight: 'bold',
     fontSize: 18,
-    color: 'black',
+    color: '#333333',
     marginBottom: 8,
   },
   description: {
-    color: 'black',
+    color: '#555555',
+  },
+  status: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    color: '#007BFF', // Use a different color for status
   },
   timestamp: {
-    color: 'black',
-    fontSize: 13,
+    fontSize: 12,
     marginTop: 8,
+    color: '#777777',
   },
   addButton: {
     position: 'absolute',
-    right: 35,
-    backgroundColor: 'black',
+    right: 16,
+    backgroundColor: '#333333',
     borderRadius: 10,
-    width: 50,
+    width: 40,
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
+    elevation: 2, // Add elevation for a subtle shadow on Android
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
   },
 });
 

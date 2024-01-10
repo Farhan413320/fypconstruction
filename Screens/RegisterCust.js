@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet,Alert } from 'react-native';
 import axios from 'axios';
 import ip from "../ipconfig";
-
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const RegisterasCustomer = ({navigation}) => {
   
@@ -10,6 +10,8 @@ const RegisterasCustomer = ({navigation}) => {
   const [username, setusername] = useState('');
   const [password, setPassword] = useState('');
   const [Confirmpassword, setConfirmpassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [usernameerror, setusernameerror] = useState('');
   const [passwordError, setPasswordError] = useState('');
@@ -43,74 +45,71 @@ const RegisterasCustomer = ({navigation}) => {
   };
 
   const handleRegister = () => {
-   
     setEmailError('');
     setPasswordError('');
-
+    setusernameerror('');
+    setPasswordMatchError('');
+  
     if (!email) {
       setEmailError('Please enter your email');
       return;
     }
-
+  
     // Validate email and password
     if (!username) {
       setusernameerror('Please enter your username');
       return;
     }
-
+  
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setEmailError('Invalid email');
       return;
     }
-
+  
     if (!password) {
       setPasswordError('Please enter your password');
       return;
     }
+    
     const passwordRegex = /^(?=.*\d)(?=.*[A-Z])(?=.*[!@#$%^&*()]).{8,}$/;
     if (!passwordRegex.test(password)) {
-      setPasswordError('Password should be at least 8 characters long having capital letter,digit, and one special character.');
+      setPasswordError('Password should be at least 8 characters long, contain a capital letter, a digit, and one special character.');
       return;
     }
+  
     if (password !== Confirmpassword) {
-      
-      
-      setPasswordMatchError("Password did not matched.");
+      setPasswordMatchError("Password did not match");
       return;
     }
-
+  
     const user = {
       username: username,
       email: email,
       password: password,
     };
-
+  
     axios
-    .post(`http://${ip}:8000/register`, user)
-    .then((response) => {
-      console.log(response);
-      Alert.alert(
-        "Registration successful",
-        "You have been registered Successfully"
-      );
-      navigation.navigate('Login');
-      setusername("");
-      setEmail("");
-      setPassword("");
-      setConfirmpassword("");
-    })
-    .catch((error) => {
-      Alert.alert(
-        "Registration Error",
-        "An error occurred while registering"
-      );
-      console.log("registration failed", error);
-    });
-     
-    
+      .post(`http://${ip}:8000/register`, user)
+      .then((response) => {
+        Alert.alert("Registration successful", "You have been registered successfully");
+        navigation.navigate('Login');
+        setusername("");
+        setEmail("");
+        setPassword("");
+        setConfirmpassword("");
+      })
+      .catch((error) => {
+        if (error.response && error.response.status === 400) {
+          Alert.alert("Registration Error", "User already exists with this email");
+        } else {
+          Alert.alert("Registration Error", "An error occurred while registering");
+          console.log("Registration failed", error);
+        }
+      });
   };
+  
 
   const handlesignin = () => {
     navigation.navigate('Login');
@@ -145,29 +144,49 @@ const RegisterasCustomer = ({navigation}) => {
           {emailError !== '' && <Text style={styles.errorText}>{emailError}</Text>}
         </View>
         <View style={styles.inputContainer}>
-          <TextInput
-            value={password}
-            style={styles.input}
-            placeholder="Password"
-            secureTextEntry
-            onChangeText={(text) => setPassword(text)}
-            onBlur={validatePassword}
-          />
-          {passwordError !== '' && <Text style={styles.errorText}>{passwordError}</Text>}
-        </View>
-        
-        <View style={styles.inputContainer}>
-          <TextInput
-            value={Confirmpassword}
-            style={styles.input}
-            placeholder="Confirm Password"
-            secureTextEntry
-            onChangeText={(text) => setConfirmpassword(text)}
-            
-          />
-          {passwordMatchError !== '' && <Text style={styles.errorText}>{passwordMatchError}</Text>}
-      
-        </View>
+  <TextInput
+    value={password}
+    style={styles.input}
+    placeholder="Password"
+    secureTextEntry={!showPassword}
+    onChangeText={(text) => setPassword(text)}
+    onBlur={validatePassword}
+  />
+   <View style={styles.iconContainer}>
+    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+      <Icon
+        name={showPassword ? 'eye' : 'eye-slash'}
+        size={20}
+        color="gray"
+      />
+    </TouchableOpacity>
+  </View>
+  {passwordError !== '' && (
+    <Text style={styles.errorText}>{passwordError}</Text>
+  )}
+</View>
+<View style={styles.inputContainer}>
+  <TextInput
+    value={Confirmpassword}
+    style={styles.input}
+    placeholder="Confirm Password"
+    secureTextEntry={!showConfirmPassword}
+    onChangeText={(text) => setConfirmpassword(text)}
+  />
+ <View style={styles.iconContainer}>
+    <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+      <Icon
+        name={showConfirmPassword ? 'eye' : 'eye-slash'}
+        size={20}
+        color="gray"
+      />
+    </TouchableOpacity>
+  </View>
+  {passwordMatchError !== '' && (
+    <Text style={styles.errorText}>{passwordMatchError}</Text>
+  )}
+</View>
+
         <TouchableOpacity style={styles.loginButton} onPress={handleRegister}>
           <Text style={styles.loginButtonText}>Register</Text>
         </TouchableOpacity>
@@ -187,6 +206,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  iconContainer: {
+    position: 'absolute',
+    right: 10, // Adjust the distance from the right side as needed
+    top: 12, // Adjust the vertical alignment as needed
   },
   welcomeContainer: {
     flex: 1,

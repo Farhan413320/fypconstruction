@@ -14,6 +14,9 @@ const productSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  city: {
+    type: String,
+  },
   measurement: {
     type: String,
   },
@@ -31,6 +34,19 @@ const productSchema = new mongoose.Schema({
     type: String,
   },
   category: {
+    type: String,
+  },
+  subCategory: {
+    type: String, // You can adjust the type based on your subcategory data structure
+  },
+  deliveryCost: {
+    type: Number,
+  },
+  totalQuantity: {
+    type: Number,
+    
+  },
+  subtype: {
     type: String,
   },
   // Add other fields as needed for your specific use case

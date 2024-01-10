@@ -1,19 +1,47 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import AntIcon from 'react-native-vector-icons/AntDesign';
 import ip from "../ipconfig";
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Draggable from 'react-native-draggable';
 
 const Home = ({navigation}) => {
+  const [chatbotPosition, setChatbotPosition] = useState({ x: 30, y: 650 });
+
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem('authToken');
+    navigation.navigate('Login');
+  };
+
+  const handlenotif = () => {
+    
+    navigation.navigate('notifcation');
+  };
+
   return (
     <View style={styles.container}>
+      
      
-      <View style={styles.overlay} />
-      <View>
-      <TouchableOpacity style={styles.drawerIcon}>
-        <MaterialIcon name="menu" size={30} color="black" />
-      </TouchableOpacity>
+       
+         <View style={styles.header}>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutText}>Logout</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity  onPress={handlenotif}>
+          <MaterialIcon name="notifications" size={30} color="black" />
+        </TouchableOpacity>
+        
+      
+      </View>
+     
+     <View style={styles.overlay} />
+     
+      
+      
+      
+      
         <Image
           source={require('../Public/images/onstruction.png')}
           style={{
@@ -23,7 +51,8 @@ const Home = ({navigation}) => {
             marginTop: 10,
           }}
         />
-      </View>
+      
+      
       <View>
         <Text style={styles.title}>Shop by category</Text>
       </View>
@@ -36,11 +65,11 @@ const Home = ({navigation}) => {
             source={require('../Public/images/cement.png')}
             style={styles.image}
           />
-          <Text style={styles.title}>Cement</Text>
+          <Text style={styles.title}>Construction Material</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.item}
-          onPress={() => navigation.navigate('SanitaryWareScreen')}
+          onPress={() => navigation.navigate('sanitery')}
         >
           <Image
             source={require('../Public/images/sanitary.png')}
@@ -50,29 +79,30 @@ const Home = ({navigation}) => {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.item}
-          onPress={() => navigation.navigate('RMSScreen')}
+          onPress={() => navigation.navigate('tools')}
         >
           <Image
             source={require('../Public/images/rms.png')}
             style={styles.image}
           />
-          <Text style={styles.title}>RMS</Text>
+          <Text style={styles.title}>Construction Tools</Text>
         </TouchableOpacity>
       </View>
       <View style={styles.row}>
         <TouchableOpacity
           style={styles.item}
-          onPress={() => navigation.navigate('ConstructionMaterialScreen')}
+          onPress={() => navigation.navigate('electrical')}
         >
           <Image
-            source={require('../Public/images/wall.png')}
+            source={require('../Public/images/eee.jpg')}
             style={styles.image}
           />
-          <Text style={styles.title}>Construction Material</Text>
+          <Text style={styles.title}>Electrical</Text>
         </TouchableOpacity>
+        
         <TouchableOpacity
           style={styles.item}
-          onPress={() => navigation.navigate('TMTSteelScreen')}
+          onPress={() => navigation.navigate('steel')}
         >
           <Image
             source={require('../Public/images/steel.png')}
@@ -82,7 +112,7 @@ const Home = ({navigation}) => {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.item}
-          onPress={() => navigation.navigate('MarbleTilesScreen')}
+          onPress={() => navigation.navigate('Marbles')}
         >
           <Image
             source={require('../Public/images/marble.png')}
@@ -90,19 +120,35 @@ const Home = ({navigation}) => {
           />
           <Text style={styles.title}>Marble & Tiles</Text>
         </TouchableOpacity>
+        
       </View>
+      <Draggable
+        x={chatbotPosition.x}
+        y={chatbotPosition.y}
+        renderSize={60}
+        isCircle
+        renderText="Chat"
+        pressDrag={() => {}}
+        longPress={() => {}}
+        onShortPressRelease={() => navigation.navigate('chatbot')}
+      >
+        <TouchableOpacity style={styles.chatbotButton} onPress={() => navigation.navigate('chatbot')}>
+          <Image source={require('../Public/images/chatt.png')} style={styles.chatbotIcon} />
+        </TouchableOpacity>
+      </Draggable>
+     
       <View style={styles.navigationBar}>
-        <TouchableOpacity style={styles.tab} onPress={() => navigation.navigate('HomeScreen')}>
+        <TouchableOpacity style={styles.tab} onPress={() => navigation.navigate('contractcus')}>
           <AntIcon name="home" size={30} color="gray" />
-          <Text style={styles.tabText}>Home</Text>
+          <Text style={styles.tabText}>contracts</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.tab} onPress={() => navigation.navigate('chatscreen')}>
           <AntIcon name="message1" size={30} color="gray" />
           <Text style={styles.tabText}>Chat</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.tab} onPress={() => navigation.navigate('SearchScreen')}>
-          <AntIcon name="search1" size={30} color="gray" />
-          <Text style={styles.tabText}>Search</Text>
+        <TouchableOpacity style={styles.tab} onPress={() => navigation.navigate('customerorders')}>
+          <AntIcon name="shoppingcart" size={30} color="gray" />
+          <Text style={styles.tabText}>Orders</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.tab} onPress={() => navigation.navigate('proposalscreen')} >
           <MaterialIcon name="request-quote" size={30} color="gray" />
@@ -120,16 +166,59 @@ const Home = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+   // backgroundColor: 'white',
+    //justifyContent: 'center',
+    //alignItems: 'center',
   },
   overlay: {
-    position: 'absolute',
+   // position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 95,
     backgroundColor: '#fff',
     opacity: 0.8,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    backgroundColor:'white',
+  },
+  logoutButton: {
+    padding: 10,
+  },
+  logoutText: {
+    color: 'black',
+    fontWeight: 'bold',
+    fontSize:17,
+  },
+  // logoutContainer: {
+  //   position: 'absolute',
+  //   right: 20,
+  //   top: 20,
+  //   zIndex: 1, // Place the logout button above other elements
+  // },
+  // logoutButton: {
+  //   padding: 10,
+    
+  //   backgroundColor: 'white',
+  //   borderRadius: 8,
+  // },
+  // logoutText: {
+  //   color: 'black',
+  //   fontWeight: 'bold',
+  // },
+  chatbotButton: {
+    padding: 10,
+  },
+  chatbotIcon: {
+    width: 60,
+    height: 60,
+    
+    // Add any styling for the chatbot icon
   },
   navigationBar: {
     position: 'absolute',
@@ -164,7 +253,7 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 16,
-    color: 'gray',
+    color: 'black',
     marginTop: 5,
   },
   row: {

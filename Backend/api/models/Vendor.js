@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-
 const vendorSchema = new mongoose.Schema({
   username: {
     type: String,
@@ -18,18 +17,24 @@ const vendorSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  cnic: {
-    type: String,
-    required: true,
-    unique: true,
+  payment: {
+    type: Number,
+    default: 0,
   },
   phoneNumber: {
     type: String,
     required: true,
   },
+  rating: {
+    type: Number,
+    default: 0,
+  },
   address: {
     type: String,
     required: true,
+  },
+  cnic: {
+    type: String,
   },
   province: {
     type: String,
@@ -41,12 +46,15 @@ const vendorSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    required: true,
   },
-  profilePicture: {
-    data: Buffer, // Store image data as a Buffer
-    contentType: String, // Store image content type (e.g., 'image/jpeg')
+  accountstatus: {
+    type: String,
+    enum: ['approved', 'suspended'],
   },
+  // profilePicture: {
+  //   data: Buffer, // Store image data as a Buffer
+  //   contentType: String, // Store image content type (e.g., 'image/jpeg')
+  // },
 });
 
 const Vendor = mongoose.model('Vendor', vendorSchema);

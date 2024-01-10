@@ -1,35 +1,68 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, TextInput, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, TextInput, ScrollView, Image } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import { useNavigation } from '@react-navigation/native';
+import axios from 'axios';
 import ip from "../ipconfig";
+import { useProductContext } from '../ProductContext';
 
-const VendorScreen = ({navigation}) => {
-  
+const VendorScreen = ({ navigation }) => {
   const [searchText, setSearchText] = useState('');
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { setProduct } = useProductContext();
+  const [filteredProducts, setFilteredProducts] = useState([]); 
 
-  const vendors = [
-    { id: 1, storeName: 'Vendor A', productName: 'Product A', rating: 4.5 },
-    { id: 2, storeName: 'Vendor B', productName: 'Product B', rating: 3.8 },
-    { id: 3, storeName: 'Vendor C', productName: 'Product C', rating: 4.2 },
-    { id: 4, storeName: 'Vendor d', productName: 'Product D', rating: 4.5 },
-    { id: 5, storeName: 'Vendor E', productName: 'Product E', rating: 3.8 },
-    { id: 6, storeName: 'Vendor F', productName: 'Product F', rating: 4.2 },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`http://${ip}:8000/getallproducts`);
+        if (response.status === 200) {
+          const filteredProducts = response.data.filter(
+            (product) => product.category === 'Construction Material'
+          );
+          console.log(filteredProducts);
+          setProducts(filteredProducts);
+          setFilteredProducts(filteredProducts); 
+        } else {
+          console.error('Failed to fetch products');
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleVendorPress = (vendor) => {
-    console.log('Selected vendor:', vendor);
-    // Handle navigation or other actions for the selected vendor
+    fetchData();
+  }, []);
+
+  const handleProductPress = (product) => {
+    setProduct(product);
+    navigation.navigate('ProductD');
+    
   };
 
   const handleSearchTextChange = (text) => {
     setSearchText(text);
-    // Perform search/filtering based on the entered text
+    const lowercaseSearchText = text.toLowerCase();
+    const filtered = products.filter((product) => product.name.toLowerCase().includes(lowercaseSearchText));
+    setFilteredProducts(filtered);
+  };
+
+  const handleSearchPress = () => {
+    
+    setFilteredProducts(products);
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <MaterialIcon name="arrow-back" size={24} color="#333" />
+        </TouchableOpacity>
+        <Text style={styles.headerText}>Products</Text>
+      </View>
       <View style={styles.searchContainer}>
         <TextInput
           style={styles.searchInput}
@@ -37,32 +70,32 @@ const VendorScreen = ({navigation}) => {
           value={searchText}
           onChangeText={handleSearchTextChange}
         />
-        <MaterialIcon name="search" size={24} color="#888888" style={styles.searchIcon} />
+        <TouchableOpacity style={styles.searchButton} onPress={handleSearchPress}>
+          <FontAwesomeIcon name="search" size={24} color="#888888" style={styles.searchIcon} />
+        </TouchableOpacity>
       </View>
 
-      {vendors.map((vendor) => (
-        <TouchableOpacity
-          key={vendor.id}
-          style={styles.vendorContainer}
-          onPress={() => handleVendorPress(vendor)}
-        >
-          <Text style={styles.storeName}>{vendor.storeName}</Text>
-          <Text style={styles.productName}>{vendor.productName}</Text>
-          <View style={styles.actionsContainer}>
-            <TouchableOpacity style={styles.actionButton} onPress={() => navigation.navigate('chatinbox')}>
-              <FontAwesomeIcon name="comment-o" size={16} color="black" />
-              <Text style={styles.actionText}>Chat</Text>
+      {!loading && filteredProducts.length === 0 ? ( // Render filteredProducts instead of products
+        <Text style={styles.noProductsText}>No products found in this category.</Text>
+      ) : (
+        <View style={styles.productGrid}>
+          {filteredProducts.map((product, index) => (
+            <TouchableOpacity
+              key={product._id}
+              style={styles.productContainer}
+             
+            >
+              <Image source={{ uri: product.images[0] }} style={styles.productImage} />
+              <Text style={styles.productName}>{product.name}</Text>
+              <Text style={styles.productDescription}>{product.description}</Text>
+              <Text style={styles.productPrice}>Price: <Text style={styles.priceValue}>Rs: {product.price}</Text></Text>
+              <TouchableOpacity style={styles.purchaseButton } onPress={() => handleProductPress(product)}>
+                <Text style={styles.purchaseButtonText }>Purchase Now</Text>
+              </TouchableOpacity>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton}>
-              <Text style={styles.visitStoreText}>Visit Store</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.ratingContainer}>
-            <MaterialIcon name="star" size={16} color="#ffc107" style={styles.ratingIcon} />
-            <Text style={styles.rating}>{vendor.rating} Stars</Text>
-          </View>
-        </TouchableOpacity>
-      ))}
+          ))}
+        </View>
+      )}
     </ScrollView>
   );
 };
@@ -72,79 +105,99 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
   },
-  contentContainer: {
-    padding: 16,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    
+    borderBottomColor: '#ccc',
+    borderBottomWidth: 1,
+  },
+  backButton: {
+    padding: 8,
+  },
+  headerText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginLeft: 8,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    margin: 16,
+    
+    borderWidth: 1,
+    borderColor: '#888888',
+    borderRadius: 8,
   },
   searchInput: {
     flex: 1,
     height: 40,
-    borderWidth: 1,
-    borderColor: '#888888',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    marginRight: 8,
+    fontSize:16,
+    
+  },
+  searchButton: {
+    padding: 8,
   },
   searchIcon: {
-    marginRight: 4,
+    marginLeft: 8,
   },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 16,
+  noProductsText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 16,
+    color: 'black',
   },
-  vendorContainer: {
+  productGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  productContainer: {
+    width: '48%', // Two products side by side with a small gap
     backgroundColor: '#f2f2f2',
     borderRadius: 8,
     padding: 16,
     marginBottom: 16,
   },
-  storeName: {
+  productImage: {
+    width: '100%',
+    height: 160, // Adjust the height as needed
+    marginBottom: 8,
+    resizeMode: 'cover',
+  },
+  productName: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 8,
+    color: 'black',
   },
-  productName: {
+  productDescription: {
     fontSize: 16,
     marginBottom: 8,
-    color: '#555555',
+    color: 'black',
   },
-  actionsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 12,
+  productPrice: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#008000',
   },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(250, 125, 84, 220)',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
+  priceValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'black',
+  },
+  purchaseButton: {
+    backgroundColor: '#008000',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     borderRadius: 8,
   },
-  actionText: {
-    marginLeft: 4,
-    color: 'black',
-  },
-  visitStoreText: {
-    color: 'black',
-    
-  },
-  ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  ratingIcon: {
-    marginRight: 4,
-  },
-  rating: {
-    fontSize: 14,
-    color: '#888888',
+  purchaseButtonText: {
+    textAlign: 'center',
+    color: 'white',
+    fontSize: 16,
   },
 });
 

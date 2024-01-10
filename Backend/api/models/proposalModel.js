@@ -14,6 +14,29 @@ const proposalSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  budget: {
+    type: Number,
+    
+  },
+  category: {
+    type: String,
+  },
+  subCategory: {
+    type: String,
+  },
+  subtype: {
+    type: String,
+  },
+  startDate: {
+    type: Date, 
+  },
+  endDate: {
+    type: Date, 
+  },
+  address: {
+    type: String,
+    required: true,
+  },
   selectedCategories: {
     type: [String],
     required: true,
@@ -25,6 +48,11 @@ const proposalSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
+  },
+  status: {
+    type: String,
+    enum: ['open', 'closed'], 
+    default: 'open', 
   },
   bids: [
     {

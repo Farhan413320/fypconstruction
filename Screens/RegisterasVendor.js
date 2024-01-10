@@ -10,14 +10,19 @@ import {
   Image,Alert,
 } from 'react-native';
 import axios from 'axios';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import ImagePicker from 'react-native-image-picker';
 import ip from "../ipconfig";
+import { Picker } from '@react-native-picker/picker';
+
 import AntIcon from 'react-native-vector-icons/AntDesign';
 
 const Register = ({navigation}) => {
   
   const [isOpenProvince, setIsOpenProvince] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [selectedProvince, setSelectedProvince] = useState('');
   const [isOpencategory, setIsOpencategory] = useState(false);
   const [selectedcategory, setSelectedcategory] = useState('');
@@ -27,7 +32,7 @@ const Register = ({navigation}) => {
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
-  const [cnic, setCnic] = useState('');
+  const [cnic, setcnic] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -82,19 +87,7 @@ const Register = ({navigation}) => {
     return;
   };
 
-  const validatePassword = () => {
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    if (password === '') {
-      setPasswordError('Password is required');
-    } else if (!passwordRegex.test(password)) {
-      setPasswordError(
-        'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one digit, and one special character'
-      );
-    } else {
-      setPasswordError('');
-    }
-    return;
-  };
+ 
 
   const handleImageUpload = () => {
     const options = {
@@ -119,7 +112,47 @@ const Register = ({navigation}) => {
 
   const handleRegister = () => {
     validateEmail();
-    validatePassword();
+    if (!username || !email || !password || !confirmPassword || !name || !phoneNumber || !address || !selectedProvince || !selectedCity || !selectedcategory) {
+      Alert.alert("All Fields Required", "Please fill in all the required fields.");
+      return;
+    }
+    if (!name || name.length > 20 || !/^[a-zA-Z\s]+$/.test(name)) {
+      Alert.alert('Invalid Name', 'Please enter a valid first name (up to 14 characters, no numbers allowed).');
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
+      Alert.alert('Invalid Email', 'Please enter a valid email address.');
+      return;
+    }
+
+
+    
+    if (!phoneNumber || phoneNumber.length > 11 || !/^[0-9]+$/.test(phoneNumber)) {
+      Alert.alert('Invalid Phone Number', 'Please enter a valid phone number (up to 11 digits).');
+      return;
+    }
+
+    // Validation for CNIC (assuming CNIC should be in the format "12345-1234567-1")
+    // if (!cnic || !/^[0-9]{5}-[0-9]{7}-[0-9]$/.test(cnic)) {
+    //   Alert.alert('Invalid CNIC', 'Please enter a valid CNIC.');
+    //   return;
+    // }
+
+    
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (password === '') {
+      setPasswordError('Password is required');
+      return;
+    }
+    if (!passwordRegex.test(password)) {
+      setPasswordError(
+        'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one digit, and one special character'
+
+        );
+        return;
+    } 
     if (password !== confirmPassword) {
       
       
@@ -132,9 +165,9 @@ const Register = ({navigation}) => {
       email,
       password,
       name,
-      cnic,
       phoneNumber,
       address,
+      cnic,
       province: selectedProvince,
       city: selectedCity,
       category: selectedcategory, // Add the selected category here
@@ -193,6 +226,13 @@ const Register = ({navigation}) => {
           <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
+              placeholder="CNIC"
+              onChangeText={(text) => setcnic(text)}
+            />
+          </View>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
               placeholder="Email"
               keyboardType="email-address"
               onChangeText={(text) => setEmail(text)}
@@ -201,152 +241,88 @@ const Register = ({navigation}) => {
             {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
           </View>
           <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder="CNIC"
-              keyboardType="email-address"
-              onChangeText={(text) => setCnic(text)}
-            />
-          </View>
-
-          <View style={styles.inputContainer}>
-            <TouchableOpacity
-              style={styles.dropdownContainer}
-              onPress={toggleDropdownProvince}
-            >
-              <Text style={styles.dropdownLabel}>Province: {selectedProvince}</Text>
-              <AntIcon
-                name={isOpenProvince ? 'caretup' : 'caretdown'}
-                size={16}
-                color="#000000"
-                style={styles.dropdownIcon}
-              />
-            </TouchableOpacity>
-            {isOpenProvince && (
-              <ScrollView style={styles.dropdownOptions}>
-                {/* Render province options here */}
-                <TouchableOpacity
-                  style={styles.dropdownOption}
-                  onPress={() => handleOptionSelectProvince('Punjab')}
-                >
-                  <Text>Punjab</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.dropdownOption}
-                  onPress={() => handleOptionSelectProvince('Sindh')}
-                >
-                  <Text>Sindh</Text>
-                </TouchableOpacity>
-                {/* Add more options as needed */}
-              </ScrollView>
-            )}
-          </View>
+        <Picker
+          selectedValue={selectedProvince}
+          style={styles.dropdownPicker}
+          onValueChange={(itemValue) => setSelectedProvince(itemValue)}
+        >
+          <Picker.Item label="Select Province" value="" />
+          <Picker.Item label="Punjab" value="Punjab" />
+          <Picker.Item label="Sindh" value="Sindh" />
+          {/* Add more items as needed */}
+        </Picker>
+      </View>
          
         
+      <View style={styles.inputContainer}>
+        <Picker
+          selectedValue={selectedCity}
+          style={styles.dropdownPicker}
+          onValueChange={(itemValue) => setSelectedCity(itemValue)}
+        >
+          <Picker.Item label="Select City" value="" />
+          <Picker.Item label="Islamabad" value="Islamabad" />
+          <Picker.Item label="Rawalpindi" value="Rawalpindi" />
+          {/* Add more items as needed */}
+        </Picker>
+      </View>
 
-          <View style={styles.inputContainer}>
-            <TouchableOpacity
-              style={styles.dropdownContainer}
-              onPress={toggleDropdownCity}
-            >
-              <Text style={styles.dropdownLabel}>City: {selectedCity}</Text>
-              <AntIcon
-                name={isOpenCity ? 'caretup' : 'caretdown'}
-                size={16}
-                color="#000000"
-                style={styles.dropdownIcon}
-              />
-            </TouchableOpacity>
-            {isOpenCity && (
-              <ScrollView style={styles.dropdownOptions}>
-                {/* Render city options here */}
-                <TouchableOpacity
-                  style={styles.dropdownOption}
-                  onPress={() => handleOptionSelectCity('City 1')}
-                >
-                  <Text>City 1</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.dropdownOption}
-                  onPress={() => handleOptionSelectCity('City 2')}
-                >
-                  <Text>City 2</Text>
-                </TouchableOpacity>
-                {/* Add more options as needed */}
-              </ScrollView>
-            )}
-          </View>
-
-          <View style={styles.inputContainer}>
-            <TouchableOpacity
-              style={styles.dropdownContainer}
-              onPress={toggleDropdowncategory}
-            >
-              <Text style={styles.dropdownLabel}>Vendor Category: {selectedcategory}</Text>
-              <AntIcon
-                name={isOpencategory ? 'caretup' : 'caretdown'}
-                size={16}
-                color="#000000"
-                style={styles.dropdownIcon}
-              />
-            </TouchableOpacity>
-            {isOpencategory && (
-              <ScrollView style={styles.dropdownOptions}>
-                {/* Render province options here */}
-                <TouchableOpacity
-                  style={styles.dropdownOption}
-                  onPress={() => handleOptionSelectcategory('Construction Material Suppliers')}
-                >
-                  <Text>Construction Material Suppliers</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.dropdownOption}
-                  onPress={() => handleOptionSelectcategory('Sanitary Suppliers')}
-                >
-                  <Text>Sanitary Suppliers</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.dropdownOption}
-                  onPress={() => handleOptionSelectcategory('Architects')}
-                >
-                  <Text>Architects</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.dropdownOption}
-                  onPress={() => handleOptionSelectcategory('Construction Companies')}
-                >
-                  <Text>Construction Companies</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.dropdownOption}
-                  onPress={() => handleOptionSelectcategory('Electrical Suppliers')}
-                >
-                  <Text>Electrical Suppliers</Text>
-                </TouchableOpacity>
-                {/* Add more options as needed */}
-              </ScrollView>
-            )}
-            </View>
+      <View style={styles.inputContainer}>
+        <Picker
+          selectedValue={selectedcategory}
+          style={styles.dropdownPicker}
+          onValueChange={(itemValue) => setSelectedcategory(itemValue)}
+        >
+          <Picker.Item label="Select Vendor Category" value="" />
+          <Picker.Item label="Construction Material Suppliers" value="Construction Material Suppliers" />
+          <Picker.Item label="Sanitary Suppliers" value="Sanitary Suppliers" />
+          <Picker.Item label="Architects" value="Architects" />
+          <Picker.Item label="Contractors" value="Contractors" />
+          <Picker.Item label="Electrical Suppliers" value="Electrical Suppliers" />
+          <Picker.Item label="Marbles & Tiles" value="Marbles & Tiles" />
+          <Picker.Item label="Construction Tools" value="Construction Tools" />
+          
+        </Picker>
+      </View>
 
           <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
               placeholder="Password"
-              secureTextEntry
+              secureTextEntry={!showPassword}
               onChangeText={(text) => setPassword(text)}
-              onBlur={validatePassword}
+            
             />
+             <View style={styles.iconContainer}>
+    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+      <Icon
+        name={showPassword ? 'eye' : 'eye-slash'}
+        size={20}
+        color="gray"
+      />
+    </TouchableOpacity>
+  </View>
             {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
           </View>
            <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
               placeholder="Confirm Password"
-              secureTextEntry
+              secureTextEntry={!showConfirmPassword}
               onChangeText={(text) => setConfirmPassword(text)}
             />
+             <View style={styles.iconContainer}>
+    <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+      <Icon
+        name={showConfirmPassword ? 'eye' : 'eye-slash'}
+        size={20}
+        color="gray"
+      />
+    </TouchableOpacity>
+  </View>
+  {passwordMatchError !== '' && (
+    <Text style={styles.errorText}>{passwordMatchError}</Text>
+  )}
           </View>
 
           <View style={styles.inputContainer}>
@@ -366,7 +342,7 @@ const Register = ({navigation}) => {
             />
           </View>
           
-          <TouchableOpacity style={styles.imageUploadButton} onPress={handleImageUpload}>
+          {/* <TouchableOpacity style={styles.imageUploadButton} onPress={handleImageUpload}>
             <Text style={styles.imageUploadButtonText}>Upload Profile Picture</Text>
           </TouchableOpacity>
           {profilePicture && (
@@ -374,7 +350,7 @@ const Register = ({navigation}) => {
               source={{ uri: profilePicture }}
               style={styles.profilePicture}
             />
-          )}
+          )} */}
           <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
             <Text style={styles.registerButtonText}>Register</Text>
           </TouchableOpacity>
@@ -392,7 +368,7 @@ const Register = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'rgba(250,125,84,255)',
+    backgroundColor: 'black',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -404,6 +380,19 @@ const styles = StyleSheet.create({
   welcomeContainer: {
     flex: 1,
     justifyContent: 'center',
+  },
+  iconContainer: {
+    position: 'absolute',
+    right: 10, // Adjust the distance from the right side as needed
+    top: 12, // Adjust the vertical alignment as needed
+  },
+  dropdownPicker: {
+    height: 40,
+    borderColor: '#CCCCCC',
+    borderBottomWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    marginBottom: 10, 
   },
   welcomeText: {
     fontSize: 24,
@@ -427,7 +416,9 @@ const styles = StyleSheet.create({
     borderColor: '#CCCCCC',
     borderBottomWidth: 1,
     borderRadius: 8,
+    fontSize:16,
     paddingHorizontal: 12,
+    marginBottom: 10,
   },
   dropdownContainer: {
     flexDirection: 'row',
@@ -450,6 +441,7 @@ const styles = StyleSheet.create({
     borderColor: '#CCCCCC',
     borderWidth: 1,
     borderRadius: 8,
+    padding: 10,
   },
   dropdownOption: {
     padding: 12,
@@ -460,7 +452,7 @@ const styles = StyleSheet.create({
     color: 'red',
   },
   imageUploadButton: {
-    backgroundColor: 'rgba(250,125,84,255)',
+    backgroundColor: 'black',
     borderRadius: 8,
     paddingVertical: 12,
     marginBottom: 16,
@@ -480,7 +472,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   registerButton: {
-    backgroundColor: 'rgba(250,125,84,255)',
+    backgroundColor: 'black',
     borderRadius: 8,
     paddingVertical: 12,
     marginBottom: 16,

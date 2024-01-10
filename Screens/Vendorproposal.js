@@ -8,7 +8,27 @@ import { useProposalContext } from "../proposalcontext.js";
 import ip from "../ipconfig";
 import jwt_decode from "jwt-decode";
 import moment from 'moment';
-import { useNavigation } from '@react-navigation/native'; // Import useNavigation
+import { useNavigation } from '@react-navigation/native';
+import Vendorbid from './Vendorbids.js';
+import { createStackNavigator } from '@react-navigation/stack';
+
+
+
+
+const Stack = createStackNavigator();
+
+// Create a component for the stack navigator
+const Proposalstack= () => {
+  return (
+    <Stack.Navigator initialRouteName="Vendorproposal" screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Vendorproposal" component={Vendorproposal} />
+      <Stack.Screen name="Vendorbids" component={Vendorbid} />
+      
+     
+      
+    </Stack.Navigator>
+  );
+};
 
 const Vendorproposal = () => {
   const [proposals, setProposals] = useState([]);
@@ -16,10 +36,9 @@ const Vendorproposal = () => {
   const { setProposal } = useProposalContext();
   const [vendorCategory, setVendorCategory] = useState("");
   const [refreshing, setRefreshing] = useState(false);
-  const navigation = useNavigation(); // Use useNavigation hook to get the navigation object
+  const navigation = useNavigation();
 
   useEffect(() => {
-    // Fetch the vendor's category based on userId
     const fetchVendorCategory = async () => {
       const token = await AsyncStorage.getItem("authToken");
       const decodedToken = jwt_decode(token);
@@ -57,7 +76,16 @@ const Vendorproposal = () => {
 
   const handleItemPress = (item) => {
     setProposal(item);
-    navigation.navigate('VendorHome') // Use the navigation object from the nearest parent navigator
+    navigation.navigate('Vendorbids');
+  };
+
+  
+  const getStatusColor = (status) => {
+    return status === 'open' ? 'green' : 'red';
+  };
+  const formatDateTime = (dateTime) => {
+    
+    return moment(dateTime).format("MMM D, YYYY HH:mm A");
   };
 
   return (
@@ -76,7 +104,14 @@ const Vendorproposal = () => {
             <View style={styles.proposalItem}>
               <Text style={styles.title}>Title: {item.title}</Text>
               <Text style={styles.description}>Description: {item.description}</Text>
-              <Text style={styles.timestamp}>Created: {moment(item.createdAt).format("MMM D, YYYY HH:mm A")}</Text>
+              <View style={styles.statusTimestampContainer}>
+                <Text style={{ ...styles.status, color: getStatusColor(item.status) }}>
+                  {item.status}
+                </Text>
+                <Text style={styles.timestamp}>
+                  Created: {moment(item.createdAt).format("MMM D, YYYY HH:mm A")}
+                </Text>
+              </View>
             </View>
           </TouchableOpacity>
         )}
@@ -91,23 +126,29 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: 'white',
+    backgroundColor: '#FFFFFF',
   },
   headerContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
-    backgroundColor: 'black',
-    padding: 8,
+    backgroundColor: '#333333',
+    padding: 16,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 5,
   },
   header: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: 'white',
+    color: '#FFFFFF',
   },
   refreshButton: {
-    backgroundColor: 'black',
+    backgroundColor: '#333333',
     padding: 8,
     borderRadius: 5,
   },
@@ -115,23 +156,38 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     padding: 16,
     borderRadius: 8,
-    borderColor: 'black',
-    borderWidth: 2,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 3,
   },
   title: {
     fontWeight: 'bold',
     fontSize: 18,
-    color: 'black',
+    color: '#333333',
     marginBottom: 8,
   },
   description: {
-    color: 'black',
+    color: '#555555',
+  },
+  statusTimestampContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  status: {
+    fontWeight: 'bold',
+    fontSize: 18,
+    color: '#007BFF', // Use a different color for status
   },
   timestamp: {
-    color: 'black',
     fontSize: 13,
     marginTop: 8,
+    color: '#777777',
   },
 });
 
-export default Vendorproposal;
+export default Proposalstack;

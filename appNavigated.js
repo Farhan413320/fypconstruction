@@ -4,8 +4,10 @@ import { createAppContainer } from 'react-navigation';
 import { createStackNavigator } from 'react-navigation-stack';
 import { NavigationContainer } from '@react-navigation/native';
 
+
 import LoginScreen from './Screens/Login';
 import PasswordReset from './Screens/Forgotpass';
+import ContractScreen from './Screens/customercontract';
 import Home from './Screens/Home';
 import Register from './Screens/RegisterasVendor';
 import RegisterasCustomer from './Screens/RegisterCust';
@@ -14,7 +16,7 @@ import OTPVerify from './Screens/EmailVeri';
 import CreateProposal from './Screens/CreateRFP';
 import CalculateCost from './Screens/ConstructionCost';
 import VendorScreen from './Screens/CementScreen';
-import ChatScreen from './Screens/chatinbox';
+import Chatinbo from './Screens/chatinbox';
 import Chatscreen from './Screens/chatscreen';
 import RFPSection from './Screens/proposalscreen';
 import ProposalDetailsScreen from './Screens/proposaldetailscreen';
@@ -24,8 +26,17 @@ import Vendororder from './Screens/Vendororder';
 import Vendorproposal from './Screens/Vendorproposal';
 import Vendorhome2 from './Screens/vendorhome2';
 import Vendorbid from './Screens/Vendorbids';
-import Product from './Screens/ProductManagement';
-
+import ChatbotScreen from './Screens/chatbot';
+import ProductDet from './Screens/ProductD';
+import CheckoutScreen from './Screens/checkout';
+import CustomerOrdersScreen from './Screens/customerorders';
+import ContractsScreen from './Screens/contractcus';
+import Sanitery from './Screens/sanitery';
+import ElectricalScreen from './Screens/electrical';
+import MarblesScreen from './Screens/Marbles';
+import Toolsscreen from './Screens/tools';
+import Steel from './Screens/steel';
+import NotificationScreen from './Screens/notifcation';
 
 const StackNavigator = createStackNavigator({
   Login: LoginScreen,
@@ -38,17 +49,27 @@ const StackNavigator = createStackNavigator({
   CreateRFP: CreateProposal,
   ConstructionCost: CalculateCost,
   CementScreen: VendorScreen,
-  chatinbox: ChatScreen,
+  chatinbox: Chatinbo,
   chatscreen: Chatscreen,
   proposalscreen: RFPSection,
   proposaldetailscreen:ProposalDetailsScreen,
   VendorHome:VendorHomeScreen,
   Vendorproposal:Vendorproposal,
-  //Vendorprofile:Vendorprofile,
+  chatbot:ChatbotScreen,
   Vendororder: Vendororder,
   //vendorhome2: Vendorhome2,
   Vendorbids: Vendorbid,
-  //ProductManagement:Product,
+  ProductD:ProductDet,
+  checkout:CheckoutScreen,
+  customerorders:CustomerOrdersScreen,
+  customercontract:ContractScreen,
+  contractcus:ContractsScreen ,
+  sanitery:Sanitery,
+  electrical:ElectricalScreen,
+  Marbles:MarblesScreen,
+  tools:Toolsscreen,
+  steel:Steel,
+ notifcation:NotificationScreen,
 
 },
 {
